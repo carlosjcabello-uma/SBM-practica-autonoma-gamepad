@@ -279,7 +279,7 @@ int main(int argc, char *argv[])
 		usleep(1000);
 		if (mueve)
 		{
-			if (contador > 100)
+			if (contador > 30)
 			{
 			   uinput_mouse_move_cursor(coord._x,coord._y);
 			   contador = 0;

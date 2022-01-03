@@ -20,7 +20,7 @@ typedef struct{
 } Coordenadas;
 
 static int uinput_fd = 0;
-static Coordenadas coord[2];
+static Coordenadas coord;
 
 static int num_of_axis=0, num_of_buttons=0;
 static char *button=NULL, name_of_joystick[80];
@@ -38,7 +38,7 @@ int open_joystick()
 	ioctl( joystick_fd, JSIOCGNAME(80), &name_of_joystick );
 	num_of_axis = num_of_axis & 0xFF;
 	num_of_buttons = num_of_buttons & 0xFF;
-
+	printf("Joystick detected: %s\n\t%d axis\n\t%d buttons\n\n", name_of_joystick, num_of_axis, num_of_buttons);
 
 	button = (char *) calloc( num_of_buttons, sizeof( char ) );
 	return joystick_fd;
@@ -73,7 +73,6 @@ int get_joystick_status(int *id)
 	if (joystick_fd < 0)
 		return -1;
 
-	// memset(wjse, 0, sizeof(*wjse));
 	while ((rc = read_joystick_event(&jse) == 1)) {
 		jse.type &= ~JS_EVENT_INIT; /* ignore synthetic events */
          printf("time: %9u  value: %6d  type: %3u  number:  %2u\r",
@@ -81,20 +80,14 @@ int get_joystick_status(int *id)
 		     fflush(stdout);
 		if (jse.type == JS_EVENT_AXIS) {
 			switch (jse.number) {
-			case 0: coord[0]._x = jse.value;
+			case 1: coord._y = jse.value;  // Control analógico eje vertical
 			*id = 0;
 			break;
-			case 1: coord[0]._y = jse.value;
+			case 2: coord._x = jse.value;  // Control analógico eje horizontal
 			*id = 0;
-			break;
-			case 2: coord[1]._x = jse.value;
-			*id = 1;
-			break;
-			case 3: coord[1]._y  = jse.value;
-			*id = 1;
 			break;
 			default:
-				break;
+			break;
 			}
 			return JS_EVENT_AXIS;
 		} else if (jse.type == JS_EVENT_BUTTON) {
@@ -151,7 +144,7 @@ void uinput_mouse_move_cursor(int x, int y )
 	float theta;
 	struct input_event event; // Input device structure
 
-// obtiene el angulo de movimiento
+	// Obtiene el angulo de movimiento
     if (x == 0 && y == 0)
     	theta = 0;
     else if  (x == 0 && y < 0)
@@ -162,16 +155,16 @@ void uinput_mouse_move_cursor(int x, int y )
     	theta = 0;
     else if  (x < 0 && y == 0)
     	theta = M_PI;
-    else
-       theta = atan (y/x);
+	else
+       theta = atan(y/x);
 
-    printf(" x : %i, y : %i theta : %f\n",x,y,theta);
-
-    // correcion angulo superior (cuarto de la pantalla superior derecha
+    // Correcion cuarto de la pantalla inferior izquierda
     if (x < 0 && y > 0)
     	theta += M_PI;
 
-    // TODO: falta correcion angulo inferior, inferior izquierda,
+	// Correcion cuarto de la pantalla superior izquierda
+	if (x < 0 && y < 0)
+    	theta += M_PI;
 
 
 	memset(&event, 0, sizeof(event));
@@ -259,7 +252,6 @@ void release_left()
 }
 
 
-/* a little test program */
 int main(int argc, char *argv[])
 {
 	int fd;
@@ -289,7 +281,7 @@ int main(int argc, char *argv[])
 		{
 			if (contador > 100)
 			{
-			   uinput_mouse_move_cursor(coord[id]._x,coord[id]._y);
+			   uinput_mouse_move_cursor(coord._x,coord._y);
 			   contador = 0;
 			}
 			contador++;
@@ -318,13 +310,10 @@ int main(int argc, char *argv[])
 		else if (status == JS_EVENT_AXIS)
 		{
             // Captura información del controlador digital.
-			if (id == 0)
-			{
-				if (coord[id]._x != 0 || coord[id]._y != 0)
-					mueve = 1;
-				else
-					mueve = 0;
-			}
+			if (coord._x != 0 || coord._y != 0)
+				mueve = 1;
+			else
+				mueve = 0;
 		}
 	}
 }

@@ -9,7 +9,7 @@
 #include <math.h>
 #include <linux/joystick.h>
 
-// Identificación del joystick, cambiar esto si es necesario
+// Identificación del joystick
 #define JOYSTICK_DEVNAME "/dev/input/js0"
 
 static int joystick_fd = -1;
@@ -28,7 +28,7 @@ static char *button=NULL, name_of_joystick[80];
 // Abre el joystick en modo lectura, esto evita cambiar los permisos
 int open_joystick()
 {
-	joystick_fd = open(JOYSTICK_DEVNAME, O_RDONLY | O_NONBLOCK); /* read write for force feedback? */
+	joystick_fd = open(JOYSTICK_DEVNAME, O_RDONLY | O_NONBLOCK);
 	if (joystick_fd < 0)
 		return joystick_fd;
 
@@ -74,7 +74,7 @@ int get_joystick_status(int *id)
 		return -1;
 
 	while ((rc = read_joystick_event(&jse) == 1)) {
-		jse.type &= ~JS_EVENT_INIT; /* ignore synthetic events */
+		jse.type &= ~JS_EVENT_INIT; // Ignora los eventos sintéticos
          printf("time: %9u  value: %6d  type: %3u  number:  %2u\r",
 				 jse.time, jse.value, jse.type, jse.number);
 		     fflush(stdout);
@@ -184,14 +184,14 @@ void uinput_mouse_move_cursor(int x, int y )
 }
 
 
-void press_middle()
+void press_right()
 {
 	// Report BUTTON CLICK - PRESS event
 	struct input_event event; // Input device structure
 	memset(&event, 0, sizeof(event));
 	gettimeofday(&event.time, NULL);
 	event.type = EV_KEY;
-    event.code =  BTN_MIDDLE;
+    event.code =  BTN_RIGHT;
 	event.value = 1;
 	write(uinput_fd, &event, sizeof(event));
 	event.type = EV_SYN;
@@ -201,14 +201,14 @@ void press_middle()
 }
 
 
-void release_middle()
+void release_right()
 {
 	// Report BUTTON CLICK - RELEASE event
 	struct input_event event; // Input device structure
 	memset(&event, 0, sizeof(event));
 	gettimeofday(&event.time, NULL);
 	event.type = EV_KEY;
-    event.code =  BTN_MIDDLE;
+    event.code =  BTN_RIGHT;
 	event.value = 0;
 	write(uinput_fd, &event, sizeof(event));
 	event.type = EV_SYN;
@@ -292,14 +292,14 @@ int main(int argc, char *argv[])
 			continue;
 		if (status == JS_EVENT_BUTTON)
 		{
-			if (id == 0)
+			if (id == 5)  // Botón trasero superior derecho
 			{
 				if (button[id] == 1)
-                    press_middle();
+                    press_right();
 				else
-                    release_middle();
+                    release_right();
 			}
-			else if (id == 1)
+			else if (id == 4)  //  trasBotónero superior izquierdo
 			{
 				if (button[id] == 1)
 					press_left();

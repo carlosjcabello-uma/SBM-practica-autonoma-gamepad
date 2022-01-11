@@ -80,10 +80,10 @@ int get_joystick_status(int *id)
 		     fflush(stdout);
 		if (jse.type == JS_EVENT_AXIS) {
 			switch (jse.number) {
-			case 1: coord._y = jse.value;  // Control analógico eje vertical
+			case 1: coord._y = jse.value;  // Control analógico eje vertical - eje 1
 			*id = 0;
 			break;
-			case 2: coord._x = jse.value;  // Control analógico eje horizontal
+			case 0: coord._x = jse.value;  // Control analógico eje horizontal - eje 0
 			*id = 0;
 			break;
 			default:
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 				else
                     release_right();
 			}
-			else if (id == 4)  //  trasBotónero superior izquierdo
+			else if (id == 4)  //  Botónero superior izquierdo
 			{
 				if (button[id] == 1)
 					press_left();

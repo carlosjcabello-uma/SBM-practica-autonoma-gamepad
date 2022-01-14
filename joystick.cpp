@@ -260,11 +260,11 @@ void uinput_mouse_move_cursor(int x, int y) {
 	gettimeofday(&event.time, NULL);
 	event.type = EV_REL;
 	event.code = REL_X;
-	event.value = cos(theta)*10;
+	event.value = 2*cos(theta)*10;
 	write(uinput_mouse_fd, &event, sizeof(event));
 	event.type = EV_REL;
 	event.code = REL_Y;
-	event.value = sin(theta)*10;
+	event.value = 2*sin(theta)*10;
 	write(uinput_mouse_fd, &event, sizeof(event));
 	event.type = EV_SYN;
 	event.code = SYN_REPORT;

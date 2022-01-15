@@ -24,6 +24,12 @@
 #define PROGRAMANDO 1
 #define ESPERANDO_BOTON_PROGRAMACION 2
 
+// Modos de funcionamiento para el movimiento del ratón
+#define NORMAL 0
+#define INVERSO 1
+
+int modo = NORMAL;
+
 // Botones programables del joystick
 char BOTONES_PROGRAMABLES[] = "YBAX";
 
@@ -234,6 +240,11 @@ void uinput_mouse_move_cursor(int x, int y) {
 	float theta;
 	struct input_event event;
 
+    if (modo == INVERSO){
+        x *= -1;
+        y *= -1;
+    }
+
 	// Obtiene el angulo de movimiento
     if (x == 0 && y == 0)
     	theta = 0;
@@ -341,6 +352,7 @@ int main(int argc, char *argv[]) {
 	int estado = INICIAL;
 	int mueve;
 	int contador;
+    int modo_anterior;
     using namespace std;
     vector<vector<int>> macros {{},{},{},{}};
     vector<int> macro;
@@ -425,6 +437,19 @@ int main(int argc, char *argv[]) {
                     close_keyboard();  // Cerramos el teclado
 				}
 			}
+            else if (id == 8 || id == 9){  // Modo inverso
+				if (button[id] == 1){
+                    if (modo != INVERSO){
+					    printf("\nModo inverso activado.\n");
+                        modo_anterior = modo;  // Guardando el modo anterior en caso de que se implementes más modos
+                        modo = INVERSO;
+                    }
+                    else{
+					    printf("\nModo inverso desactivado.\n");
+                        modo = modo_anterior;
+                    }
+                }
+            }
 			else if (id >= 0 && id <= 3){  // Pulsación del botón programable
 				if (button[id] == 1){
 					if (estado == ESPERANDO_BOTON_PROGRAMACION){

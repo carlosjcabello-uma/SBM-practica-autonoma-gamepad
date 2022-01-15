@@ -24,6 +24,17 @@
 #define PROGRAMANDO 1
 #define ESPERANDO_BOTON_PROGRAMACION 2
 
+// Modos de funcionamiento para el movimiento del ratón
+#define NORMAL 0
+#define INVERSO 1
+
+int modo = NORMAL;
+
+// Velocidad del puntero del ratón
+#define VELOCIDAD_MINIMA 1
+#define VELOCIDAD_MAXIMA 5
+int velocidad = 2;
+
 // Botones programables del joystick
 char BOTONES_PROGRAMABLES[] = "YBAX";
 
@@ -234,6 +245,11 @@ void uinput_mouse_move_cursor(int x, int y) {
 	float theta;
 	struct input_event event;
 
+    if (modo == INVERSO){
+        x *= -1;
+        y *= -1;
+    }
+
 	// Obtiene el angulo de movimiento
     if (x == 0 && y == 0)
     	theta = 0;
@@ -260,11 +276,11 @@ void uinput_mouse_move_cursor(int x, int y) {
 	gettimeofday(&event.time, NULL);
 	event.type = EV_REL;
 	event.code = REL_X;
-	event.value = 2*cos(theta)*10;
+	event.value = velocidad*cos(theta)*10;
 	write(uinput_mouse_fd, &event, sizeof(event));
 	event.type = EV_REL;
 	event.code = REL_Y;
-	event.value = 2*sin(theta)*10;
+	event.value = velocidad*sin(theta)*10;
 	write(uinput_mouse_fd, &event, sizeof(event));
 	event.type = EV_SYN;
 	event.code = SYN_REPORT;
@@ -341,6 +357,7 @@ int main(int argc, char *argv[]) {
 	int estado = INICIAL;
 	int mueve;
 	int contador;
+    int modo_anterior;
     using namespace std;
     vector<vector<int>> macros {{},{},{},{}};
     vector<int> macro;
@@ -425,6 +442,35 @@ int main(int argc, char *argv[]) {
                     close_keyboard();  // Cerramos el teclado
 				}
 			}
+            else if (id == 9){  // Incremento de la velocidad del puntero del ratón
+				if (button[id] == 1){
+                    if (velocidad < VELOCIDAD_MAXIMA){
+                        velocidad++;
+                        printf("Velocidad del puntero incrementada. Velocidad: %d\n", velocidad);
+                    }
+                }
+            }
+            else if (id == 8){  // Decremento de la velocidad del puntero del ratón
+				if (button[id] == 1){
+                    if (velocidad > VELOCIDAD_MINIMA){
+                        velocidad--;
+                        printf("Velocidad del puntero decrementada. Velocidad: %d\n", velocidad);
+                    }
+                }
+            }
+            else if (id == 11){  // Modo inverso
+				if (button[id] == 1){
+                    if (modo != INVERSO){
+					    printf("\nModo inverso activado.\n");
+                        modo_anterior = modo;  // Guardando el modo anterior en caso de que se implementes más modos
+                        modo = INVERSO;
+                    }
+                    else{
+					    printf("\nModo inverso desactivado.\n");
+                        modo = modo_anterior;
+                    }
+                }
+            }
 			else if (id >= 0 && id <= 3){  // Pulsación del botón programable
 				if (button[id] == 1){
 					if (estado == ESPERANDO_BOTON_PROGRAMACION){
